@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Village Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white shadow-lg min-h-screen p-4">
+    <h1 class="text-xl font-bold mb-2">Village System</h1>
+    <p id="usernameLabel" class="text-gray-700 mb-6">Loading user...</p>
+    <nav class="space-y-3">
+      <button onclick="showPage('home')" class="btn">Home</button>
+      <button onclick="showPage('apply')" class="btn">Apply Scheme</button>
+      <button onclick="loadMyApplications(); showPage('applications')" class="btn">My Applications</button>
+      <button onclick="showPage('complaints')" class="btn">Submit Complaint</button>
+    </nav>
+  </aside>
+
+
+  <!-- Main Page -->
+  <main class="flex-1 p-6">
+
+    <!-- Home -->
+    <div id="home" class="page">
+      <h2 class="text-2xl font-bold mb-4">Welcome 👋</h2>
+      <p>Select a menu item</p>
+    </div>
+
+    <!-- Apply Scheme -->
+    <div id="apply" class="page hidden">
+      <h2 class="text-2xl font-bold mb-4">Apply for Scheme</h2>
+      <form id="applyForm" class="bg-white p-6 rounded shadow space-y-4">
+
+        <div>
+          <label class="font-semibold">Scheme</label>
+          <select id="schemeDropdown" class="border p-2 w-full rounded"></select>
+        </div>
+
+        <div>
+          <label class="font-semibold">Village</label>
+          <select id="villageDropdown" class="border p-2 w-full rounded"></select>
+        </div>
+
+        <div>
+          <label class="font-semibold">Details</label>
+          <textarea id="details" class="border p-2 w-full rounded"></textarea>
+        </div>
+
+        <!-- Documents removed / hidden -->
+        <div style="display:none">
+          <input id="documents" name="documents" type="file" multiple />
+        </div>
+
+        <button class="bg-green-600 text-white px-4 py-2 rounded">Submit</button>
+      </form>
+    </div>
+
+    <!-- My Applications -->
+    <div id="applications" class="page hidden">
+      <h2 class="text-2xl font-bold mb-4">My Applications</h2>
+      <table class="min-w-full bg-white rounded shadow">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="py-2 px-4 border">ID</th>
+            <th class="py-2 px-4 border">Scheme</th>
+            <th class="py-2 px-4 border">Village</th>
+            <th class="py-2 px-4 border">Status</th>
+            <th class="py-2 px-4 border">Documents</th>
+            <th class="py-2 px-4 border">Applied</th>
+          </tr>
+        </thead>
+        <tbody id="applicationsTable"></tbody>
+      </table>
+    </div>
+
+    <!-- Complaint -->
+    <div id="complaints" class="page hidden">
+      <h2 class="text-2xl font-bold mb-4">Submit Complaint</h2>
+      <form class="bg-white p-6 rounded shadow space-y-4">
+        <input class="border p-2 w-full rounded" placeholder="Title" />
+        <textarea class="border p-2 w-full rounded" placeholder="Details"></textarea>
+        <button class="bg-red-600 text-white px-4 py-2 rounded">Submit</button>
+      </form>
+    </div>
+
+  </main>
+
+
+  <script>
+    const USER_ID = 1;
+    const usernameLabel = document.getElementById("usernameLabel");
+    const schemeDropdown = document.getElementById("schemeDropdown");
+    const villageDropdown = document.getElementById("villageDropdown");
+    const applicationsTable = document.getElementById("applicationsTable");
+    const applyForm = document.getElementById("applyForm");
+
+    async function loadUser() {
+      try {
+        const res = await fetch(`/users/${USER_ID}`);
+        const json = await res.json();
+        usernameLabel.textContent = json.data?.name || "User";
+      } catch {
+        usernameLabel.textContent = "User";
+      }
+    }
+
+    async function loadSchemes() {
+      const res = await fetch(`/schemegetall`);
+      const json = await res.json();
+      schemeDropdown.innerHTML =
+        `<option value="">-- select scheme --</option>` +
+        (json.data || []).map(s => `<option value="${s.scheme_id}">${s.name}</option>`).join("");
+    }
+
+    async function loadVillages() {
+      const res = await fetch(`/villages`);
+      const json = await res.json();
+      villageDropdown.innerHTML =
+        `<option value="">-- select village --</option>` +
+        (json.data || []).map(v => `<option value="${v.village_id}">${v.village}</option>`).join("");
+    }
+
+    async function loadMyApplications() {
+      const res = await fetch(`/myapplications/${USER_ID}`);
+      const json = await res.json();
+      const list = json.data || [];
+
+      applicationsTable.innerHTML = list.map(a => `
+      <tr>
+        <td class="border px-4 py-2">${a.application_id}</td>  
+        <td class="border px-4 py-2">${a.scheme_name}</td>
+        <td class="border px-4 py-2">${a.village_name}</td>
+        <td class="border px-4 py-2">${a.status}</td>   
+        <td class="border px-4 py-2">${a.document ?? "NA"}</td>       
+        <td class="border px-4 py-2">${new Date(a.created_at).toLocaleString()}</td>
+      </tr>
+    `).join("");
+    }
+
+    applyForm.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      if (!schemeDropdown.value || !villageDropdown.value || !details.value.trim()) {
+        alert("Please fill all required fields");
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append("user_id", USER_ID);
+      fd.append("scheme_id", schemeDropdown.value);
+      fd.append("village_id", villageDropdown.value);
+      fd.append("details", document.getElementById("details").value);
+      fd.append("status", "Pending");
+
+      const res = await fetch("/applyscheme", { method: "POST", body: fd });
+      const json = await res.json();
+      alert(json.message || "Submitted");
+      applyForm.reset();
+      await loadMyApplications();
+      showPage("applications");
+    });
+
+    function showPage(pageId) {
+      document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
+      document.getElementById(pageId).classList.remove("hidden");
+    }
+
+    window.onload = async () => {
+      await loadUser();
+      await loadSchemes();
+      await loadVillages();
+    };
+  </script>
+
+  <style>
+    .btn {
+      width: 100%;
+      text-align: left;
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    .btn:hover {
+      background: #e5e7eb;
+    }
+  </style>
+
+</body>
+
+</html>

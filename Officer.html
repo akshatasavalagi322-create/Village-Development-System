@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Officer Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 flex">
+
+<!-- Sidebar -->
+<aside class="w-64 bg-white shadow-lg min-h-screen p-4">
+  <h1 class="text-xl font-bold mb-6">Officer Dashboard</h1>
+  <nav class="space-y-3">
+    <button onclick="showPage('dashboard')" class="w-full text-left px-2 py-1 rounded hover:bg-gray-200">Dashboard</button>
+    <button onclick="loadApplications(); showPage('applications')" class="w-full text-left px-2 py-1 rounded hover:bg-gray-200">Applications</button>
+    <button onclick="loadSummary(); showPage('reports')" class="w-full text-left px-2 py-1 rounded hover:bg-gray-200">Reports</button>
+  </nav>
+</aside>
+
+<!-- Main Content -->
+<main class="flex-1 p-6">
+
+  <!-- Dashboard Summary -->
+<div id="dashboard" class="page">
+  <h2 id="officerName" class="text-2xl font-bold mb-4">Welcome, Officer</h2>
+  <div class="grid grid-cols-3 gap-4">
+    <div class="bg-white p-4 rounded shadow">
+      <h3 class="font-bold">Total Applications</h3>
+      <p id="totalApps" class="text-3xl">0</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+      <h3 class="font-bold">Pending</h3>
+      <p id="pendingApps" class="text-3xl text-yellow-600">0</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+      <h3 class="font-bold">Ongoing</h3>
+      <p id="ongoingApps" class="text-3xl text-blue-600">0</p>
+    </div>
+    <div class="bg-white p-4 rounded shadow">
+      <h3 class="font-bold">Completed</h3>
+      <p id="completedApps" class="text-3xl text-green-600">0</p>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Applications Table -->
+  <div id="applications" class="page hidden">
+    <h2 class="text-2xl font-bold mb-4">Applications Assigned</h2>
+    <table class="min-w-full bg-white rounded shadow-md">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="py-2 px-4 border">Application ID</th>
+          <th class="py-2 px-4 border">Villager Name</th>
+          <th class="py-2 px-4 border">Scheme</th>
+          <th class="py-2 px-4 border">Village</th>
+          <th class="py-2 px-4 border">Status</th>
+          <th class="py-2 px-4 border">Created At</th>
+          <th class="py-2 px-4 border">Action</th>
+        </tr>
+      </thead>
+      <tbody id="appsTable"></tbody>
+    </table>
+  </div>
+
+  <!-- Officer Update Form -->
+  <div id="updateForm" class="page hidden">
+    <h2 class="text-2xl font-bold mb-4">Update Application</h2>
+    <form id="updateAppForm" class="bg-white p-6 rounded shadow-md space-y-4">
+      <div>
+        <label class="block font-semibold">Application ID</label>
+        <input type="text" id="appId" class="border p-2 w-full rounded" readonly />
+      </div>
+      <div>
+        <label class="block font-semibold">Progress</label>
+        <textarea id="progress" class="border p-2 w-full rounded" rows="3"></textarea>
+      </div>
+      <div>
+        <label class="block font-semibold">Status</label>
+        <select id="status" class="border p-2 w-full rounded">
+          <option>Pending</option>
+          <option>Ongoing</option>
+          <option>Completed</option>
+        </select>
+      </div>
+      <div>
+        <label class="block font-semibold">Officer Remarks</label>
+        <textarea id="remarks" class="border p-2 w-full rounded" rows="2"></textarea>
+      </div>
+      <div class="flex gap-2">
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Submit Update</button>
+        <button onclick="closeForm(); return false;" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Reports Page -->
+  <div id="reports" class="page hidden">
+    <h2 class="text-2xl font-bold mb-4">Reports</h2>
+    <canvas id="chart" class="bg-white p-4 rounded shadow-md"></canvas>
+  </div>
+
+</main>
+
+<script>
+const USER_ID = 1; // Officer/User ID
+const applicationsTable = document.getElementById("appsTable");
+let chartInstance = null;
+
+function showPage(pageId){
+  document.querySelectorAll('.page').forEach(pg => pg.classList.add('hidden'));
+  const page = document.getElementById(pageId);
+  if(page) page.classList.remove('hidden');
+}
+
+// Load Summary
+async function loadSummary(){
+  try{
+    const res = await fetch(`/api/applications/summary/${USER_ID}`);
+    if(!res.ok) throw new Error("Summary API failed");
+    const data = await res.json();
+
+    document.getElementById("totalApps").innerText = data.total ?? 0;
+    document.getElementById("pendingApps").innerText = data.pending ?? 0;
+    document.getElementById("ongoingApps").innerText = data.ongoing ?? 0;
+    document.getElementById("completedApps").innerText = data.completed ?? 0;
+    
+
+    const ctx = document.getElementById("chart").getContext("2d");
+    if(chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["Pending", "Ongoing", "Completed"],
+        datasets: [{
+          label: "Applications",
+          backgroundColor: ["#FBBF24", "#3B82F6", "#10B981"],
+          data: [
+            data.pending ?? 0,
+            data.ongoing ?? 0,
+            data.completed ?? 0
+          ]
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+  } catch(err){
+    console.error("Dashboard summary error:", err);
+    alert("Failed to load dashboard summary");
+  }
+}
+
+// Load Applications (unchanged)
+async function loadApplications() {
+    const res = await fetch(`/myapplications/${USER_ID}`);
+    const json = await res.json();
+    const list = json.data || [];
+
+    applicationsTable.innerHTML = list.map(a => `
+      <tr>
+        <td class="border px-4 py-2">${a.application_id}</td>  
+        <td class="border px-4 py-2">${a.username}</td>
+        <td class="border px-4 py-2">${a.scheme_name}</td>
+        <td class="border px-4 py-2">${a.village_name}</td>      
+        <td class="border px-4 py-2">${a.status}</td>     
+        <td class="border px-4 py-2">${new Date(a.created_at).toLocaleString()}</td>
+        <td class="border px-4 py-2 space-x-2">
+          <button onclick="openForm(${a.application_id})"
+                  class="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700">Update</button>
+          <button onclick="approveApplication(${a.application_id})"
+                  class="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">Approve</button>
+        </td>
+      </tr>
+    `).join("");
+}
+
+// Open Update Form
+function openForm(id){
+  document.getElementById("appId").value = id;
+  fetch(`/api/applications/details/${id}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("progress").value = data.progress || "";
+      document.getElementById("status").value = data.status || "Pending";
+      document.getElementById("remarks").value = data.remarks || "";
+    })
+    .catch(err => console.error("Fetch application error:", err));
+  showPage("updateForm");
+}
+
+// Close Form
+function closeForm(){ showPage("applications"); }
+
+// Submit Update Form
+document.getElementById("updateAppForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const id = document.getElementById("appId").value;
+  const body = {
+    id,    
+    status: document.getElementById("status").value    
+  };
+  try{
+    const res = await fetch(`/api/applications/update/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok) throw new Error("Update API failed");
+    alert("Application updated successfully");
+    loadApplications();
+    loadSummary();
+    showPage("applications");
+  } catch(err){
+    console.error("Update error:", err);
+    alert("Failed to update application");
+  }
+});
+
+// Approve Application
+function approveApplication(id){
+  fetch(`/api/applications/update/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "Completed" })
+  })
+  .then(res => res.json())
+  .then(() => {
+    alert("Application approved!");
+    loadApplications();
+    loadSummary();
+  })
+  .catch(err => console.error("Approve error:", err));
+}
+
+// Initial load
+window.addEventListener("DOMContentLoaded", ()=>{
+  loadSummary();
+  loadApplications();
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+[Villager]
+    |
+    | Apply for scheme
+    v
+[Applications Table in DB]
+    |
+    | Officer reviews
+    v
+[Officer Dashboard]
+    | Updates progress/status
+    v
+[OfficerReports Table in DB]
+    |
+    | Admin monitors
+    v
+[Admin Dashboard] -> Reports & Analytics

@@ -1,0 +1,50 @@
+🏡 Village Development System — Dashboard Design
+1️⃣ Villager Dashboard
+
+Objective: Allow villagers to apply for schemes, track their application, and submit complaints.
+
+Pages / Sections:
+
+Home Page
+
+Welcome message: “Welcome, [Villager Name]”
+
+Quick links: Apply for Scheme, Track Application, Submit Complaint
+
+Apply for Scheme Form
+
+Fields:
+
+Scheme Name (Dropdown)
+
+Village Name (Auto-filled or Dropdown)
+
+Required Documents (Upload PDF/Images)
+
+Additional Details (Text Area)
+
+Submit Button → Saves request to Applications Table
+
+My Applications
+
+Table showing:
+
+Application ID
+
+Scheme Name
+
+Status (Pending / Approved / Rejected)
+
+Officer Remarks
+
+Date of Submission
+
+Submit Complaint
+
+Fields:
+
+Complaint Title
+
+Complaint Details
+
+Submit Button → Stored in DB

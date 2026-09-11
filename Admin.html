@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white shadow-lg min-h-screen p-4">
+    <h1 class="text-xl font-bold mb-6">Admin Dashboard</h1>
+    <nav class="space-y-3">
+      <button onclick="showPage('dashboard')" class="w-full px-2 py-1 text-left hover:bg-gray-200">Dashboard</button>
+      <button onclick="showPage('districts')" class="w-full px-2 py-1 text-left hover:bg-gray-200">Districts</button>
+      <button onclick="showPage('talukas')" class="w-full px-2 py-1 text-left hover:bg-gray-200">Talukas</button>
+      <button onclick="showPage('villages')" class="w-full px-2 py-1 text-left hover:bg-gray-200">Villages</button>
+      <button onclick="showPage('schemes')" class="w-full px-2 py-1 text-left hover:bg-gray-200">Schemes</button>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 p-6">
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="page">
+      <h2 class="text-2xl font-bold mb-4">Welcome, Admin</h2>
+    </div>
+
+    <!-- DISTRICTS -->
+    <div id="districts" class="page hidden">
+      <div class="flex justify-between mb-4">
+        <h2 class="text-2xl font-bold">Districts</h2>
+        <button onclick="openDistrictModal()" class="bg-green-600 text-white px-4 py-2 rounded">+ Add District</button>
+      </div>
+      <table class="min-w-full bg-white rounded shadow-md">
+        <thead class="bg-gray-200">
+          <tr><th class="px-4 py-2 border">ID</th><th class="px-4 py-2 border">District Name</th></tr>
+        </thead>
+        <tbody id="districtTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- TALUKAS -->
+    <div id="talukas" class="page hidden">
+      <div class="flex justify-between mb-4">
+        <h2 class="text-2xl font-bold">Talukas</h2>
+        <button onclick="openTalukaModal()" class="bg-green-600 text-white px-4 py-2 rounded">+ Add Taluka</button>
+      </div>
+      <table class="min-w-full bg-white rounded shadow-md">
+        <thead class="bg-gray-200">
+          <tr><th class="px-4 py-2 border">ID</th><th class="px-4 py-2 border">District</th><th class="px-4 py-2 border">Taluka Name</th></tr>
+        </thead>
+        <tbody id="talukaTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- VILLAGES -->
+    <div id="villages" class="page hidden">
+      <div class="flex justify-between mb-4">
+        <h2 class="text-2xl font-bold">Villages</h2>
+        <button onclick="openVillageModal()" class="bg-green-600 text-white px-4 py-2 rounded">+ Add Village</button>
+      </div>
+
+      <div class="flex gap-4 mb-4">
+        <select id="districtSelect" onchange="loadTalukasForVillageTable()" class="border rounded px-3 py-2 w-1/3"></select>
+        <select id="talukaSelect" onchange="loadVillageTable()" class="border rounded px-3 py-2 w-1/3"></select>
+      </div>
+
+      <table class="min-w-full bg-white rounded shadow-md">
+        <thead class="bg-gray-200">
+          <tr><th class="px-4 py-2 border">ID</th><th class="px-4 py-2 border">Village Name</th><th class="px-4 py-2 border">Population</th></tr>
+        </thead>
+        <tbody id="villageTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- SCHEMES -->
+    <div id="schemes" class="page hidden">
+      <div class="flex justify-between mb-4">
+        <h2 class="text-2xl font-bold">Schemes</h2>
+        <button onclick="openSchemeModal()" class="bg-green-600 text-white px-4 py-2 rounded">+ Add Scheme</button>
+      </div>
+      <table class="min-w-full bg-white rounded shadow-md">
+        <thead class="bg-gray-200"><tr><th class="px-4 py-2 border">ID</th><th class="px-4 py-2 border">Name</th><th class="px-4 py-2 border">Budget</th></tr></thead>
+        <tbody id="schemeTableBody"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- DISTRICT MODAL -->
+  <div id="districtModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded w-96">
+      <h3 class="text-xl font-bold mb-3">Add District</h3>
+      <input id="dName" type="text" class="border rounded w-full px-3 py-2 mb-4" placeholder="District Name">
+      <div class="flex justify-end gap-3">
+        <button onclick="closeDistrictModal()" class="px-4 py-2 bg-gray-400 text-white rounded">Cancel</button>
+        <button onclick="saveDistrict()" class="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TALUKA MODAL -->
+  <div id="talukaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded w-96">
+      <h3 class="text-xl font-bold mb-3">Add Taluka</h3>
+      <select id="tDistrict" class="border rounded w-full px-3 py-2 mb-3"></select>
+      <input id="tTalukaName" type="text" class="border rounded w-full px-3 py-2 mb-4" placeholder="Taluka Name">
+      <div class="flex justify-end gap-3">
+        <button onclick="closeTalukaModal()" class="px-4 py-2 bg-gray-400 text-white rounded">Cancel</button>
+        <button onclick="saveTaluka()" class="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VILLAGE MODAL -->
+  <div id="villageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded w-96">
+      <h3 class="text-xl font-bold mb-3">Add Village</h3>
+      <select id="vDistrict" onchange="loadTalukaDropdownForVillage()" class="border rounded w-full px-3 py-2 mb-3"></select>
+      <select id="vTaluka" class="border rounded w-full px-3 py-2 mb-3"></select>
+      <input id="vVillageName" type="text" class="border rounded w-full px-3 py-2 mb-3" placeholder="Village Name">
+      <input id="vPopulation" type="number" class="border rounded w-full px-3 py-2 mb-3" placeholder="Population">
+      <div class="flex justify-end gap-3">
+        <button onclick="closeVillageModal()" class="px-4 py-2 bg-gray-400 text-white rounded">Cancel</button>
+        <button onclick="saveVillage()" class="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEME MODAL -->
+  <div id="schemeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-lg w-96 p-6">
+      <h3 class="text-xl font-semibold mb-4">Add New Scheme</h3>
+      <input id="schemeName" type="text" class="w-full border rounded px-3 py-2 mb-3" placeholder="Scheme Name">
+      <input id="schemeBudget" type="number" class="w-full border rounded px-3 py-2 mb-4" placeholder="Budget ₹">
+      <div class="flex justify-end gap-3">
+        <button onclick="closeSchemeModal()" class="px-4 py-2 bg-gray-400 text-white rounded">Cancel</button>
+        <button onclick="saveScheme()" class="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  function showPage(page) {
+    document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
+    document.getElementById(page).classList.remove("hidden");
+
+    if (page === "districts") loadDistricts();
+    if (page === "talukas") loadTalukaTable();
+    if (page === "villages") loadDistrictDropdownVillageTable();
+    if (page === "schemes") loadSchemes();
+  }
+
+  /* -------- DISTRICTS -------- */
+  function openDistrictModal() { districtModal.classList.remove("hidden"); }
+  function closeDistrictModal() { districtModal.classList.add("hidden"); dName.value = ""; }
+
+  async function loadDistricts() {
+    const res = await fetch("/districts");
+    const data = (await res.json()).data;
+    districtTableBody.innerHTML = "";
+    data.forEach(d => {
+      districtTableBody.innerHTML += `<tr><td class='border px-4 py-2'>${d.district_id}</td><td class='border px-4 py-2'>${d.name}</td></tr>`;
+    });
+  }
+
+  async function saveDistrict() {
+    if (!dName.value.trim()) return alert("Enter district name");
+    await fetch("/addDistrict", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ district_name: dName.value.trim() })
+    });
+    closeDistrictModal();
+    loadDistricts();
+  }
+
+  /* -------- TALUKAS -------- */
+function openTalukaModal() {
+  talukaModal.classList.remove("hidden");
+  loadDistrictDropdownTalukaModal();
+}
+
+function closeTalukaModal() {
+  talukaModal.classList.add("hidden");
+  tTalukaName.value = "";
+}
+
+async function loadDistrictDropdownTalukaModal() {
+  const res = await fetch("/districts");
+  const data = (await res.json()).data;
+  tDistrict.innerHTML = `<option value="">Select District</option>` + 
+    data.map(d => `<option value="${d.district_id}">${d.name}</option>`).join("");
+}
+
+async function loadTalukaTable() {
+  const res = await fetch("/talukas");
+  const data = (await res.json()).data;
+
+  talukaTableBody.innerHTML = "";
+  data.forEach(t => {
+    talukaTableBody.innerHTML += `
+      <tr>
+        <td class="border px-4 py-2">${t.taluka_id}</td>       
+        <td class="border px-4 py-2">${t.district_name}</td>
+        <td class="border px-4 py-2">${t.name}</td>
+      </tr>`;
+  });
+}
+
+async function saveTaluka() {
+  if (!tDistrict.value || !tTalukaName.value.trim()) {
+    alert("District and Taluka name required");
+    return;
+  }
+
+  await fetch("/addTaluka", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      district_id: Number(tDistrict.value),
+      taluka_name: tTalukaName.value.trim()
+    })
+  });
+
+  closeTalukaModal();
+  loadTalukaTable();
+}
+
+
+  /* -------- VILLAGES -------- */
+  function openVillageModal() { villageModal.classList.remove("hidden"); loadDistrictDropdownVillageModal(); }
+  function closeVillageModal() { villageModal.classList.add("hidden"); vVillageName.value = ""; vPopulation.value = ""; }
+
+  async function loadDistrictDropdownVillageModal() {
+    const res = await fetch("/districts");
+    const data = (await res.json()).data;
+    vDistrict.innerHTML = `<option value="">Select District</option>` + data.map(d => `<option value="${d.district_id}">${d.name}</option>`).join("");
+  }
+
+  async function loadTalukaDropdownForVillage() {
+    const res = await fetch(`/talukas?districtId=${vDistrict.value}`);
+    const data = (await res.json()).data;
+    vTaluka.innerHTML = `<option value="">Select Taluka</option>` + data.map(t => `<option value="${t.taluka_id}">${t.name}</option>`).join("");
+  }
+
+  async function saveVillage() {
+    if (!vDistrict.value || !vTaluka.value || !vVillageName.value.trim() || !vPopulation.value.trim()) return alert("Enter all details");
+    await fetch("/addVillage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        districtId: vDistrict.value,
+        talukaId: vTaluka.value,
+        village: vVillageName.value.trim(),
+        population: vPopulation.value.trim()
+      })
+    });
+    closeVillageModal();
+    loadVillageTable();
+  }
+
+  async function loadDistrictDropdownVillageTable() {
+    const res = await fetch("/districts");
+    const data = (await res.json()).data;
+    districtSelect.innerHTML = `<option value="">Select District</option>` + data.map(d => `<option value="${d.district_id}">${d.name}</option>`).join("");
+  }
+
+  async function loadTalukasForVillageTable() {
+    const res = await fetch(`/talukas?districtId=${districtSelect.value}`);
+    const data = (await res.json()).data;
+    talukaSelect.innerHTML = `<option value="">Select Taluka</option>` + data.map(t => `<option value="${t.taluka_id}">${t.name}</option>`).join("");
+  }
+
+  async function loadVillageTable() {
+    const res = await fetch(`/villages`);
+    const data = (await res.json()).data;
+    villageTableBody.innerHTML = "";
+    data.forEach(v => {
+      villageTableBody.innerHTML += `<tr><td class='border px-4 py-2'>${v.village_id}</td><td class='border px-4 py-2'>${v.village}</td><td class='border px-4 py-2'>${v.population}</td></tr>`;
+    });
+  }
+
+  /* -------- SCHEMES -------- */
+  function openSchemeModal() { schemeModal.classList.remove("hidden"); }
+  function closeSchemeModal() { schemeModal.classList.add("hidden"); schemeName.value = ""; schemeBudget.value = ""; }
+
+  async function loadSchemes() {
+    const r = await fetch("/schemegetall");
+    const data = (await r.json()).data;
+    schemeTableBody.innerHTML = "";
+    data.forEach(s => {
+      schemeTableBody.innerHTML += `<tr><td class='border px-4 py-2'>${s.scheme_id}</td><td class='border px-4 py-2'>${s.name}</td><td class='border px-4 py-2'>₹ ${s.budget}</td></tr>`;
+    });
+  }
+
+  async function saveScheme() {
+    if (!schemeName.value.trim() || !schemeBudget.value.trim()) return alert("Enter scheme details");
+    await fetch("/scheme", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: schemeName.value.trim(), budget: schemeBudget.value.trim() })
+    });
+    closeSchemeModal();
+    loadSchemes();
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,43 @@
+2️⃣ Officer Dashboard
+
+Objective: Manage applications from villagers and fill progress reports.
+
+Pages / Sections:
+
+Dashboard / Summary
+
+Total Applications Assigned
+
+Pending / Approved / Rejected Applications
+
+Quick Links: Review Applications, Fill Progress Reports
+
+Applications Review Page
+
+Table listing all applications:
+
+Application ID | Villager Name | Scheme | Status | Action (View/Edit)
+
+Application Details & Progress Form
+
+Villager Details (Read-only)
+
+Scheme Details (Read-only)
+
+Officer Input Fields:
+
+Progress Description
+
+Status Update (Ongoing / Completed / Pending)
+
+Remarks
+
+Save/Submit Button → Updates OfficerReports Table
+
+Reports / Analytics (Optional)
+
+Number of applications per scheme
+
+Budget spent per village
+
+Pending applications graph

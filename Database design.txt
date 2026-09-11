@@ -1,0 +1,55 @@
+1. Users
+
+user_id (PK)
+
+name
+
+role (admin/officer/villager)
+
+email
+
+password
+
+2. Village
+
+village_id (PK)
+
+name
+
+population
+
+3. Schemes
+
+scheme_id (PK)
+
+scheme_name
+
+description
+
+budget
+
+4. Applications
+
+application_id (PK)
+
+user_id (FK)
+
+scheme_id (FK)
+
+status (pending/approved/rejected)
+
+officer_id (FK)
+
+5. OfficerReports
+
+report_id (PK)
+
+officer_id (FK)
+
+village_id (FK)
+
+scheme_id (FK)
+
+progress_details
+
+remarks
