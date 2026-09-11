@@ -1,0 +1,33 @@
+3️⃣ Admin Dashboard
+
+Objective: Oversee all officers and village activities, generate reports.
+
+Pages / Sections:
+
+Dashboard / Summary
+
+Total Villages
+
+Total Schemes
+
+Total Applications
+
+Applications Status Pie Chart (Pending / Approved / Rejected)
+
+Officer Management
+
+Table: Officer ID | Name | Assigned Villages | Status | Action
+
+Village & Scheme Management
+
+Add/Edit Village
+
+Add/Edit Scheme
+
+Reports / Analytics
+
+Applications per Scheme
+
+Budget Utilization
+
+Officer Performance Metrics
